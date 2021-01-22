@@ -1,0 +1,15 @@
+.w100 {width: 100%;}
+.h100 {height: 100%;}
+
+.bg-white {background: white;}
+
+.font-ss{font-family: sans-serif;}
+.space-break{white-space: break-spaces;}
+
+.relative {position: relative;}
+.absolute {position: absolute;}
+.oh {overflow: hidden;}
+.hide {display: none;}
+.hideFromScreen {position: absolute; left: -9999px; top: -9999px;}
+
+
