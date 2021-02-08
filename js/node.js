@@ -24,7 +24,7 @@ function Node(params){
 		this.posX = x + dx;
 		this.posY = y + dy; 
 	}else{
-		this.posX = windowWidth * 0.5;
+		this.posX = 100;
 		this.posY = windowHeight * 0.5;
 	}
 	var uiGroup = new Group();
@@ -42,20 +42,6 @@ function _node_Refresh() {
 	var y = this.posY - h * 0.5;
 	this.content.css({'left': x, 'top': y})
 
-	var shape = this.uiGroup.children['shape'];
-	if(shape){
-		shape.remove();	
-	}
-	var r = Math.max(w,h,30);
-	this.r = r;
-	shape = new Shape.Circle({
-		    center: [this.posX, this.posY],
-		    radius: r,
-		    fillColor: '#ddd'
-		});
-	shape.name = 'shape';
-	this.uiGroup.addChild(shape);
-
 	if(this.parentUid){
 		var parentNode = Nodes.getNodeByUid(this.parentUid);
 		var link = this.uiGroup.children['link'];
@@ -65,9 +51,10 @@ function _node_Refresh() {
 		link = new Path.Line({
 		    from: [this.posX, this.posY],
 		    to: [parentNode.posX, parentNode.posY],
-		    strokeColor: '#ddd',
-		    strokeWidth: 5
+		    strokeColor: '#333',
+		    strokeWidth: 0.5
 		});
+		link.dashArray = [10, 4];
 		link.name = 'link';
 		link.sendToBack();
 		this.uiGroup.addChild(link);

@@ -2,6 +2,8 @@
 .h100 {height: 100%;}
 
 .bg-white {background: white;}
+.board {width: calc(50% - 20px); height: calc(50% - 20px); top: 25%; left: 25%; border: 1px solid #666; padding: 10px;}
+.board span{font-weight: bold; background: #eee;}
 
 .font-ss{font-family: sans-serif;}
 .space-break{white-space: break-spaces;}

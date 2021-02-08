@@ -14,8 +14,8 @@ $(function() {
     FrontPaper.install(window);
     
     Entry.init();
+    Board.init();
     Nodes.init();
-    
 });
 
 

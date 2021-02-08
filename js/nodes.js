@@ -1,10 +1,12 @@
 var nodeMap = null;
 var nodeContentContainer = null;
 var nodes = [];
+var nodeList = [];
 var tempNode = null; 
 
 var Nodes = {
 	init: _nodes_init,
+	syncBoard: _nodes_syncBoard,
 	createNode: _nodes_createNode,
 	createTempNode: _nodes_createTempNode,
 	getNodeByUid: _nodes_getNodeByUid,
@@ -17,19 +19,10 @@ function _nodes_init() {
         width: windowWidth + 'px',
         height: windowHeight + 'px'
     });
-
-	if(!tempNode){
-		_nodes_createTempNode();
-    }
 }
 
-function _nodes_createTempNode(params) {
-	params = params || {};
-	params.temp = true;
-	var node = new Node(params);
-	nodes.push(node);
-	tempNode = node;
-	tempNode.refresh();
+function _nodes_syncBoard() {
+	Board.ele.find('span')
 }
 
 function _nodes_createNode(params){
@@ -37,6 +30,8 @@ function _nodes_createNode(params){
 	params.parentNode = params.mode == 'Parallel' ? (tempNode ? _nodes_getNodeByUid(tempNode.parentUid) : null) : tempNode;
 	params.anchorNode = tempNode;
 	tempNode.unTemp();
+	var parentNode = _nodes_getNodeByUid(tempNode.parentUid);
+	Model.addNode(tempNode);
 	_nodes_createTempNode(params)
 }
 
