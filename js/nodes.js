@@ -1,38 +1,35 @@
-var nodeMap = null;
-var nodeContentContainer = null;
-var nodes = [];
-var nodeList = [];
-var tempNode = null; 
-
 var Nodes = {
+	nodeIndex: 0,
+	path: [],
+	ele: null,
 	init: _nodes_init,
-	syncBoard: _nodes_syncBoard,
-	createNode: _nodes_createNode,
-	createTempNode: _nodes_createTempNode,
-	getNodeByUid: _nodes_getNodeByUid,
-	adjustNodesPos: _nodes_adjustNodesPos
+	addNode: _nodes_addNode,
+	releaseNodes: _nodes_releaseNodes,
+	getNodeByUid: _nodes_getNodeByUid
+	
 }
 
 function _nodes_init() {
-	nodeMap = $("#nodemap");
-	nodeContentContainer = $('#nodecontent').css({
+	Nodes.ele = $('#nodecontainer').css({
         width: windowWidth + 'px',
         height: windowHeight + 'px'
     });
 }
 
-function _nodes_syncBoard() {
-	Board.ele.find('span')
+function _nodes_addNode(ele) {
+	var text = ele.text();
+	var id = Model.addNode(text);
+	ele.attr('nid', id);
+	var node = new Node({ele:ele});
+	Nodes.path.push(node)
 }
 
-function _nodes_createNode(params){
-	params = params || {};
-	params.parentNode = params.mode == 'Parallel' ? (tempNode ? _nodes_getNodeByUid(tempNode.parentUid) : null) : tempNode;
-	params.anchorNode = tempNode;
-	tempNode.unTemp();
-	var parentNode = _nodes_getNodeByUid(tempNode.parentUid);
-	Model.addNode(tempNode);
-	_nodes_createTempNode(params)
+function _nodes_releaseNodes() {
+	Nodes.path.forEach(function(n){
+		if(n.ele){
+			n.release();
+		}
+	})
 }
 
 function _nodes_adjustNodesPos(adjust, ele) {
@@ -47,7 +44,7 @@ function _nodes_adjustNodesPos(adjust, ele) {
 }
 
 function _nodes_getNodeByUid(uid) {
-	return _.find(nodes, function(n){
+	return _.find(Nodes.path, function(n){
 		return n.uid == uid;
 	})
 }

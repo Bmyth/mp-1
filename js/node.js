@@ -1,56 +1,36 @@
 var minNodeDistance = 100;
 function Node(params){
 	params = params || {};
-	this.temp = params.temp;
-	this.uid = generateUid();	
+	this.uid = generateUid();
+	this.ele = params.ele.attr('uid', this.uid);
+	this.id = this.ele.attr('nid');
+	this.prevUid = this.ele.attr('prevuid');
 
-	this.refresh = _node_Refresh;
-	this.unTemp = _node_unTemp;
+	var rect = this.ele[0].getBoundingClientRect();
+	this.posX = rect.left + rect.width * 0.5;
+	this.posY = rect.top + rect.height * 0.5;
+
+	this.uiGroup = new Group();
+
+	this.refresh = _node_refresh;
+	this.release = _node_release;
 	this.adjustPos = _node_adjustPos;
 
-	var parentEle = params.parentNode ? nodeMap.find('.n[uid=' + params.parentNode.uid + ']') : nodeMap;
-	this.parentUid = parentEle.attr('uid');
-	var ele = $('<div class="n"></div>').attr({'uid':this.uid}).appendTo(parentEle);
-	this.ele = ele;
-	var content = $('<div class="nc space-break absolute"></div>').attr({'uid':this.uid}).appendTo(nodeContentContainer);
-	this.content = content;
-	this.parentUid = parentEle.attr('uid');
-	var anchorNode = params.anchorNode || params.parentNode;
-	if(anchorNode && params.direction){
-		var x = anchorNode.posX;
-		var y = anchorNode.posY;
-		var dx = minNodeDistance * DirectionConfig[params.direction].iX;
-		var dy = minNodeDistance * DirectionConfig[params.direction].iY;
-		this.posX = x + dx;
-		this.posY = y + dy; 
-	}else{
-		this.posX = 100;
-		this.posY = windowHeight * 0.5;
-	}
-	var uiGroup = new Group();
-	this.uiGroup = uiGroup;
+	this.refresh();
 }
 
-function _node_Refresh() {
-	if(this.temp){
-		var text = entry.val() + '_';
-		this.content.html(text);
-	}
-	var w = this.content.width();
-	var h = this.content.height();
-	var x = this.posX - w * 0.5;
-	var y = this.posY - h * 0.5;
-	this.content.css({'left': x, 'top': y})
+function _node_refresh() {
+	_node_refreshText(this);
 
-	if(this.parentUid){
-		var parentNode = Nodes.getNodeByUid(this.parentUid);
+	if(this.prevUid){
+		var prevNode = Nodes.getNodeByUid(this.prevUid);
 		var link = this.uiGroup.children['link'];
 		if(link){
 			link.remove();	
 		}
 		link = new Path.Line({
 		    from: [this.posX, this.posY],
-		    to: [parentNode.posX, parentNode.posY],
+		    to: [prevNode.posX, prevNode.posY],
 		    strokeColor: '#333',
 		    strokeWidth: 0.5
 		});
@@ -61,14 +41,25 @@ function _node_Refresh() {
 	}
 }
 
-function _node_unTemp() {
-	if(this.temp){
-		var text = entry.val();
-		entry.val('')
-		this.content.html(text);
-		delete this.temp;
-	}
+function _node_release() {
+	var ele = $("<p class='node'></p>").attr('uid',this.uid).appendTo(Nodes.ele);
+	this.ele = ele;
+
+	var p = Board.getMapPos({x:this.posX, y:this.posY});
+	this.posX = p.x;
+	this.posY = p.y;
 	this.refresh();
+}
+
+function _node_refreshText(node){
+	if(node.ele.hasClass('node')){
+		node.ele.text(Model.getText(node.id));
+		var w = node.ele.width();
+		var h = node.ele.height();
+		var l = node.posX - w * 0.5;
+		var t = node.posY - h * 0.5;
+		node.ele.css({'left':l, 'top':t})
+	}
 }
 
 function _node_adjustPos(adjust){
