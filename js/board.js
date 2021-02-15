@@ -5,8 +5,7 @@ var Board = {
 	close: _board_close,
 	getMapPos: _board_getMapPos,
 	onEditNode: false,
-	ele: null,
-	entryNode: null
+	ele: null
 }
 
 function _board_init(){
@@ -24,8 +23,9 @@ function _board_update(val) {
 			var prevspan = Board.ele.find('span').last();
 			if(prevspan.length > 0){
 				prevUid = prevspan.attr('uid');
+				console.log(prevUid)
 			}else{
-				prevUid = Nodes.path.length > 0 ? Nodes.path[Nodes.path.length - 1].uid :''
+				prevUid = Nodes.path.length > 0 ? Nodes.path[Nodes.path.length - 1].uid : '';
 			}
 			html = html.substring(0,html.length-1);
 			Board.ele.html(html + '<span></span>');
@@ -58,13 +58,14 @@ function _board_update(val) {
     	Board.ele.fadeIn()
     }
 
-    var h = Board.ele.height();
-    Board.ele.css('top', (windowHeight - h) * 0.5);
+    Board.ele.css('top', (windowHeight - Board.ele.height()) * 0.5);
+    Nodes.updateBoardNodes();
 }
 
 function _board_release() {
 	Nodes.releaseNodes();
 	Board.ele.empty();
+	Board.ele.fadeOut();
 }
 
 function _board_close() {

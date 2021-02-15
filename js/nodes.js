@@ -2,8 +2,11 @@ var Nodes = {
 	nodeIndex: 0,
 	path: [],
 	ele: null,
+	frame: null,
+	boardTop: 0,
 	init: _nodes_init,
 	addNode: _nodes_addNode,
+	updateBoardNodes: _nodes_updateBoardNodes,
 	releaseNodes: _nodes_releaseNodes,
 	getNodeByUid: _nodes_getNodeByUid
 	
@@ -14,6 +17,12 @@ function _nodes_init() {
         width: windowWidth + 'px',
         height: windowHeight + 'px'
     });
+    Nodes.frame = new Group();
+    Nodes.frame.onFrame = _nodes_onFrame;
+}
+
+function _nodes_onFrame(i) {
+	
 }
 
 function _nodes_addNode(ele) {
@@ -26,21 +35,26 @@ function _nodes_addNode(ele) {
 
 function _nodes_releaseNodes() {
 	Nodes.path.forEach(function(n){
-		if(n.ele){
+		if(n.onBoard){
 			n.release();
 		}
 	})
 }
 
-function _nodes_adjustNodesPos(adjust, ele) {
-	ele = ele || nodeMap;
-	if(ele.attr('uid')){
-		var node = _nodes_getNodeByUid(ele.attr('uid'));
-		node.adjustPos(adjust);
+function _nodes_updateBoardNodes() {
+	if(this.boardTop != Board.ele.css('top')){
+		this.boardTop = Board.ele.css('top');
+		Nodes.path.forEach(function(n){
+			if(n.onBoard){
+				var boardEle = Board.ele.find('[uid=' + n.uid + ']');
+				if(boardEle){
+					n.updateBoardElePos(boardEle);
+				}else{
+					Nodes.deleteNode(n);
+				}
+			}
+		})
 	}
-	ele.children('.n').each(function(){
-		_nodes_adjustNodesPos(adjust, $(this));
-	})
 }
 
 function _nodes_getNodeByUid(uid) {

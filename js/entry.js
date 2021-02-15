@@ -16,7 +16,7 @@ function _entry_Keyup(e){
 	var e  = e ||  window.e;          
 　　	var key = e.keyCode || e.which;
 
-	console.log(key)
+	// console.log(key)
     // left
     if(key == '37'){
         _entry_direction('left', event.shiftKey);
@@ -48,8 +48,8 @@ function _entry_compositionend() {
         Board.update('@');
         Entry.ele.val('');
     }else if(isRelease){
-        Board.release();
         Entry.ele.val('');
+        Board.release();
     }else{
         Board.update(Entry.ele.val());
     }

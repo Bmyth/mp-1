@@ -1,54 +1,95 @@
 var minNodeDistance = 100;
 function Node(params){
 	params = params || {};
-	this.uid = generateUid();
-	this.ele = params.ele.attr('uid', this.uid);
-	this.id = this.ele.attr('nid');
-	this.prevUid = this.ele.attr('prevuid');
 
-	var rect = this.ele[0].getBoundingClientRect();
-	this.posX = rect.left + rect.width * 0.5;
-	this.posY = rect.top + rect.height * 0.5;
+	var node = new Group();
+	node.uid = generateUid();
+	node.uiGroup = new Group();
+	
+	if(params.ele){
+		node.ele = $('<p class="node"></p>').text(params.ele.text()).appendTo(Nodes.ele);
+		node.onBoard = true;
+		params.ele.attr('uid', node.uid).addClass('opacity0');
+		node.id = params.ele.attr('nid');
+		node.prevUid = params.ele.attr('prevuid');
 
-	this.uiGroup = new Group();
+		var x,y;
+		var rect = params.ele[0].getBoundingClientRect();
+		x = rect.left + rect.width * 0.5;
+		y = rect.top + rect.height * 0.5;
 
-	this.refresh = _node_refresh;
-	this.release = _node_release;
-	this.adjustPos = _node_adjustPos;
+		var	uiFrame =  new Path.Rectangle({
+	    	size: [rect.width, rect.height],
+	    	strokeColor: '#666',
+	    	strokeWidth: 1
+	    });
+	    uiFrame.bringToFront();
+	    uiFrame.name = 'frame';
+	    node.uiGroup.addChild(uiFrame);
 
-	this.refresh();
-}
+	    node.phyObj = Physic.addObj({
+			x: x,
+			y: y,
+			w: rect.width,
+			h: rect.height,
+			isStatic: true,
+			mass: 10,
+			frictionAir: 1
+		});
+		// console.log(node.phyObj)
+	}
 
-function _node_refresh() {
-	_node_refreshText(this);
-
-	if(this.prevUid){
-		var prevNode = Nodes.getNodeByUid(this.prevUid);
-		var link = this.uiGroup.children['link'];
-		if(link){
-			link.remove();	
-		}
-		link = new Path.Line({
-		    from: [this.posX, this.posY],
-		    to: [prevNode.posX, prevNode.posY],
+	if(node.prevUid){
+		node.prevNode = Nodes.getNodeByUid(node.prevUid);
+		var link = new Path.Line({
+		    from: [node.posX, node.posY],
+		    to: [node.prevNode.posX, node.prevNode.posY],
 		    strokeColor: '#333',
 		    strokeWidth: 0.5
 		});
 		link.dashArray = [10, 4];
 		link.name = 'link';
+		node.uiGroup.addChild(link);
 		link.sendToBack();
-		this.uiGroup.addChild(link);
+	}
+
+	node.onFrame = _node_onFrame;
+	node.release = _node_release;
+	node.updateBoardElePos = _node_updateBoardElePos;
+	return node;
+}
+
+function _node_onFrame(i) {
+	if(!this.phyObj.isStatic){
+		// var x =  0.001 * Math.random() - 0.0005;
+		// var y = 0.001 * Math.random() - 0.001;
+		var x = 0;
+		var y = 0;
+		Physic.applyForce(this.phyObj, {x:x, y:y})
+	}
+	if(this.posX !=  this.phyObj.position.x || this.posY != this.phyObj.position.y){
+		var uiFrame = this.uiGroup.children['frame'];
+		var rect = this.ele[0].getBoundingClientRect();
+
+		this.posX = this.phyObj.position.x;
+		this.posY = this.phyObj.position.y;
+		uiFrame.position.x = this.posX;
+		uiFrame.position.y = this.posY;
+		this.ele.css({left: this.posX - rect.width * 0.5, top: this.posY - rect.height * 0.5})
+
+		if(this.prevNode){
+			var link = this.uiGroup.children['link'];
+			link.segments[0].point.x = this.posX;
+			link.segments[0].point.y = this.posY;
+			link.segments[1].point.x = this.prevNode.posX;
+			link.segments[1].point.y = this.prevNode.posY;
+		}
 	}
 }
 
 function _node_release() {
-	var ele = $("<p class='node'></p>").attr('uid',this.uid).appendTo(Nodes.ele);
-	this.ele = ele;
-
-	var p = Board.getMapPos({x:this.posX, y:this.posY});
-	this.posX = p.x;
-	this.posY = p.y;
-	this.refresh();
+	this.onBoard = false;
+	Physic.setStatic(this.phyObj, false)
 }
 
 function _node_refreshText(node){
@@ -62,10 +103,10 @@ function _node_refreshText(node){
 	}
 }
 
-function _node_adjustPos(adjust){
-	this.posX += adjust.x;
-	this.posY += adjust.y;
-	this.refresh();
+function _node_updateBoardElePos(boardEle){
+	var rect = boardEle[0].getBoundingClientRect();
+	this.phyObj.position.x = rect.left + rect.width * 0.5;
+	this.phyObj.position.y =  rect.top + rect.height * 0.5;
 }
 
 function generateUid(){
